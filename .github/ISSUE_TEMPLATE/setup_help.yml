@@ -1,0 +1,66 @@
+name: Setup Help
+description: Ask for help with first-run/bootstrap setup issues.
+title: "[Setup]: "
+labels:
+  - setup-help
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For setup issues, logs and environment details are mandatory.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      placeholder: Fresh install, upgrade, moving to new machine, etc.
+    validations:
+      required: true
+
+  - type: input
+    id: command
+    attributes:
+      label: Exact command run
+      placeholder: python scripts/arca.py bootstrap --build
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: |
+        OS:
+        Docker version:
+        GPU + VRAM:
+        Driver version:
+    validations:
+      required: true
+
+  - type: textarea
+    id: doctor_output
+    attributes:
+      label: Doctor Output
+      description: Paste `python scripts/arca.py doctor --no-color` output.
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: backend_logs
+    attributes:
+      label: Backend Logs
+      description: Paste `docker compose logs --tail=200 backend`.
+      render: shell
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked `docs/dev/troubleshooting.md`.
+          required: true
+        - label: I confirmed available disk space and model download size constraints.
+          required: true

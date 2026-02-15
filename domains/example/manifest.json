@@ -1,0 +1,18 @@
+{
+  "name": "example",
+  "display_name": "ARCA Assistant",
+  "version": "0.1.0",
+  "arca_min_version": "0.1.0",
+  "description": "A general-purpose document intelligence assistant powered by ARCA.",
+  "tools": [],
+  "handlers": [],
+  "routes": [],
+  "lexicon": "lexicon.json",
+  "admin_visible": true,
+  "branding": {
+    "app_name": "ARCA",
+    "tagline": "From Documents to Domain Expert",
+    "primary_color": "#6366f1",
+    "description": "Self-hosted RAG platform with domain pack specialization"
+  }
+}

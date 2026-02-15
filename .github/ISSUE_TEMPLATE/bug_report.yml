@@ -1,0 +1,83 @@
+name: Bug Report
+description: Report a reproducible ARCA defect.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. Please include enough detail for a clean repro.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What is failing?
+      placeholder: Short description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro_steps
+    attributes:
+      label: Steps To Reproduce
+      description: Exact steps from a clean start.
+      placeholder: |
+        1. Clone repo
+        2. Run ./scripts/bootstrap.ps1
+        3. Open /admin
+        4. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_vs_actual
+    attributes:
+      label: Expected vs Actual
+      placeholder: What you expected and what happened instead.
+    validations:
+      required: true
+
+  - type: input
+    id: arca_version
+    attributes:
+      label: ARCA Version
+      description: Tag/commit (e.g., v0.1.0 or commit SHA)
+      placeholder: v0.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Docker version, GPU, driver.
+      placeholder: |
+        OS: Windows 11
+        Docker: 29.x
+        GPU: RTX 5090
+        Driver: 591.xx
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Include backend logs and the exact command you ran.
+      render: shell
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I ran `python scripts/arca.py doctor` and reviewed warnings/failures.
+          required: true
+        - label: I checked `docs/dev/troubleshooting.md`.
+          required: true
+        - label: I can reproduce this issue consistently.
+          required: true

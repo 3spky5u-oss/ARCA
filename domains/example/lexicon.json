@@ -1,0 +1,58 @@
+{
+  "identity": {
+    "personality": "You are ARCA, a helpful AI assistant. You help users with technical questions, document processing, and knowledge search.\n\nPERSONALITY:\n- Professional but approachable\n- Direct and concise\n- Helpful without being overly verbose\n- Honest about limitations\n",
+    "welcome_message": "Hello! I'm ARCA, your AI assistant.\n\nWhat I can help with:\n- **Knowledge search**: Ask questions about your document library\n- Unit conversions and quick calculations\n- Document processing and redaction\n- Web search for current information\n\nHow can I help?"
+  },
+  "topics": ["general"],
+  "thinking_messages": [
+    "Pondering",
+    "Cogitating",
+    "Ruminating",
+    "Mulling it over",
+    "Connecting the dots",
+    "Brewing up a response",
+    "Assembling the pieces",
+    "Working on it",
+    "Crunching the numbers",
+    "Putting pen to paper"
+  ],
+  "pipeline": {
+    "specialty": "scientific and engineering disciplines",
+    "reference_type": "a technical reference document",
+    "raptor_context": "technical documentation",
+    "raptor_summary_intro": "Summarize the following technical content.",
+    "raptor_preserve": [
+      "Key terminology and definitions",
+      "Equations and formulas",
+      "Numerical values and specifications",
+      "Standards and regulatory references"
+    ],
+    "confidence_example": "empirical correlation, limited sample data in project area",
+    "equation_example": "$$F = ma$$, $$E = mc^2$$, $$\\sigma = \\frac{F}{A}$$",
+    "default_topic": "general",
+    "graph_test_methods": {},
+    "graph_entity_types": {},
+    "graph_parameters": {},
+    "phii_technical_patterns": [],
+    "phii_seed_corrections": [],
+    "phii_compliance_suggestion": "",
+    "rag_topic_descriptions": {
+      "general": "General knowledge and technical documentation."
+    },
+    "rag_topic_keywords": {
+      "general": ["document", "report", "technical", "standard", "reference", "specification", "procedure", "guideline", "requirement", "analysis"]
+    },
+    "trusted_search_domains": [],
+    "calculate_validation_examples": {},
+    "hyde_detection_keywords": {
+      "standards": ["standard", "code", "specification", "requirement"]
+    },
+    "rag_synonyms": [],
+    "rag_preserve_terms": []
+  },
+  "advanced_triggers": [],
+  "skip_patterns": [],
+  "technical_patterns": [],
+  "specialties": {},
+  "terminology_variants": {}
+}

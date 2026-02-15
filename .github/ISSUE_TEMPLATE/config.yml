@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ARCA Troubleshooting Guide
+    url: https://github.com/3spky5u-oss/ARCA/blob/main/docs/dev/troubleshooting.md
+    about: Check common setup/runtime fixes before opening an issue.
+  - name: ARCA Configuration Guide
+    url: https://github.com/3spky5u-oss/ARCA/blob/main/docs/dev/config.md
+    about: Reference for .env and runtime tuning options.

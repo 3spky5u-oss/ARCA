@@ -1,0 +1,25 @@
+# Ruff configuration for ARCA backend
+
+[lint]
+# Use default rules (E4, E7, E9, F) but ignore noisy ones
+ignore = [
+    "F401",  # Unused imports (many are intentional for availability checks or re-exports)
+    "F841",  # Local variable assigned but never used (sometimes intentional)
+    "E722",  # Bare except (tracked in tech debt registry)
+    "E741",  # Ambiguous variable name (l in list comprehensions is clear in context)
+]
+
+# Exclude directories from linting
+exclude = [
+    "profiling/",
+    "scripts/audit/",
+    "__pycache__",
+    ".git",
+    "*.egg-info",
+]
+
+[lint.per-file-ignores]
+# Allow unused imports in __init__ files (re-exports)
+"__init__.py" = ["F401"]
+# Allow broad exceptions in benchmarks
+"profiling/*" = ["E722", "F401", "F841"]

@@ -1,0 +1,54 @@
+name: Feature Request
+description: Suggest an improvement to ARCA.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What limitation are you hitting?
+      placeholder: Describe the practical pain point first.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      placeholder: What behavior/change do you want?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      placeholder: Workarounds or other options you've tried.
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Area
+      options:
+        - Bootstrap / Setup
+        - Models / LLM runtime
+        - Retrieval / RAG
+        - Admin UI
+        - Benchmarking
+        - MCP integration
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I checked existing issues and roadmap items first.
+          required: true
+        - label: This request is specific enough to implement/test.
+          required: true

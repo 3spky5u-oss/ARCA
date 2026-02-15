@@ -1,0 +1,242 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: arca-postgres
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      - POSTGRES_USER=arca
+      # Local convenience fallback: bootstrap scripts should still generate a unique secret in .env.
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-arca-local-dev}
+      - POSTGRES_DB=arca
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./backend/migrations/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U arca"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: arca-redis
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: redis-server --appendonly yes --maxmemory ${REDIS_MAXMEMORY:-1gb} --maxmemory-policy allkeys-lru
+    volumes:
+      - ./data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.16.2
+    container_name: arca-qdrant
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:6333:6333"   # REST API
+      - "127.0.0.1:6334:6334"   # gRPC (faster batch ops)
+    volumes:
+      - ./data/qdrant_storage:/qdrant/storage
+    deploy:
+      resources:
+        limits:
+          memory: ${QDRANT_MEMORY_LIMIT:-8G}
+
+  neo4j:
+    image: neo4j:5.17-community
+    container_name: arca-neo4j
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:7474:7474"   # Browser UI
+      - "127.0.0.1:7687:7687"   # Bolt protocol
+    environment:
+      # Local convenience fallback: bootstrap scripts should still generate a unique secret in .env.
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-arca-local-dev}
+      - NEO4J_PLUGINS=["apoc"]
+      - NEO4J_apoc_export_file_enabled=true
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_dbms_security_procedures_unrestricted=apoc.*
+    volumes:
+      - ./data/neo4j:/data
+      - ./data/neo4j_logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: arca-searxng
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./data/searxng:/etc/searxng:rw
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+
+  backend:
+    image: ${ARCA_BACKEND_IMAGE:-ghcr.io/3spky5u-oss/arca-backend}:${ARCA_IMAGE_TAG:-latest}
+    pull_policy: ${ARCA_PULL_POLICY:-missing}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - CUDA_ARCHS=${CUDA_ARCHS:-75;80;86;89}
+    container_name: arca-backend
+    restart: unless-stopped
+    gpus: ${GPU_DEVICES:-all}
+    logging:
+      driver: json-file
+      options:
+        max-size: "50m"
+        max-file: "3"
+    ports:
+      - "8000:8000"
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEMORY_LIMIT:-32G}
+    environment:
+      # ARCA domain pack (default: "example" for vanilla ARCA)
+      - ARCA_DOMAIN=${ARCA_DOMAIN:-example}
+      - ARCA_DOMAINS_DIR=/app/domains
+      # LLM server configuration (llama-server managed in-process)
+      - LLM_MODELS_DIR=/models
+      - LLM_CHAT_MODEL=${LLM_CHAT_MODEL:-Qwen3-30B-A3B-Q4_K_M.gguf}
+      - LLM_CHAT_MODEL_REPO=${LLM_CHAT_MODEL_REPO:-}
+      - LLM_CODE_MODEL=${LLM_CODE_MODEL:-Qwen3-30B-A3B-Q4_K_M.gguf}
+      - LLM_CODE_MODEL_REPO=${LLM_CODE_MODEL_REPO:-}
+      - LLM_CHAT_PORT=8081
+      - LLM_CHAT_CTX=${LLM_CHAT_CTX:-8192}
+      - LLM_VISION_MODEL=${LLM_VISION_MODEL:-Qwen3VL-8B-Instruct-Q8_0.gguf}
+      - LLM_VISION_MODEL_REPO=${LLM_VISION_MODEL_REPO:-}
+      - LLM_VISION_STRUCTURED_MODEL=${LLM_VISION_STRUCTURED_MODEL:-Qwen3VL-8B-Instruct-Q8_0.gguf}
+      - LLM_VISION_STRUCTURED_MODEL_REPO=${LLM_VISION_STRUCTURED_MODEL_REPO:-}
+      - LLM_VISION_PORT=8082
+      - LLM_VISION_CTX=${LLM_VISION_CTX:-4096}
+      - LLM_EXPERT_MODEL=${LLM_EXPERT_MODEL:-Qwen3-30B-A3B-Q4_K_M.gguf}
+      - LLM_EXPERT_MODEL_REPO=${LLM_EXPERT_MODEL_REPO:-}
+      - ARCA_AUTO_DOWNLOAD_MODELS=${ARCA_AUTO_DOWNLOAD_MODELS:-true}
+      - ARCA_AUTO_DOWNLOAD_OPTIONAL_MODELS=${ARCA_AUTO_DOWNLOAD_OPTIONAL_MODELS:-true}
+      - SEARXNG_ENABLED=${SEARXNG_ENABLED:-true}
+      - SEARXNG_URL=${SEARXNG_URL:-http://searxng:8080}
+      - SEARXNG_CATEGORIES=${SEARXNG_CATEGORIES:-general}
+      - SEARXNG_LANGUAGE=${SEARXNG_LANGUAGE:-}
+      - SEARXNG_TIMEOUT_S=${SEARXNG_TIMEOUT_S:-10}
+      - SEARXNG_MAX_RESULTS=${SEARXNG_MAX_RESULTS:-5}
+      - SEARXNG_REQUEST_FORMAT=${SEARXNG_REQUEST_FORMAT:-json}
+      - CLEANUP_ON_STARTUP=${CLEANUP_ON_STARTUP:-false}
+      - CLEANUP_MAX_AGE_HOURS=24
+      - CLEANUP_INTERVAL_HOURS=6
+      - HF_HOME=/app/.cache/huggingface
+      - HF_TOKEN=${HF_TOKEN:-}
+      - HUGGING_FACE_HUB_TOKEN=${HUGGING_FACE_HUB_TOKEN:-}
+      - HF_HUB_DISABLE_PROGRESS_BARS=1
+      - HF_HUB_VERBOSITY=error
+      - TRANSFORMERS_VERBOSITY=error
+      - TOKENIZERS_PARALLELISM=false
+      - TQDM_DISABLE=1
+      - PHII_IMPLICIT_FEEDBACK=true
+      # Qdrant vector database
+      - QDRANT_URL=http://qdrant:6333
+      # Redis session cache
+      - REDIS_URL=redis://redis:6379/0
+      - REDIS_ENABLED=true
+      # PostgreSQL database
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=arca
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-arca-local-dev}
+      - POSTGRES_DB=arca
+      - DATABASE_ENABLED=true
+      # Neo4j graph database
+      - NEO4J_URL=bolt://neo4j:7687
+      - NEO4J_USER=neo4j
+      - NEO4J_PASSWORD=${NEO4J_PASSWORD:-arca-local-dev}
+      - ADMIN_KEY=${ADMIN_KEY:-}
+      - MCP_API_KEY=${MCP_API_KEY:-}
+      - ADMIN_RESET=${ADMIN_RESET:-false}
+      # Benchmark (Gemini LLM-as-judge)
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      # Fine-tuned model (empty = disabled)
+      - LLM_FINETUNED_MODEL=${LLM_FINETUNED_MODEL:-}
+      # LLM server binary path
+      - LLAMA_SERVER_BIN=/usr/local/bin/llama-server
+      # Hardware simulation (set ARCA_SIMULATE_VRAM in .env to test degraded hardware)
+      - ALLOW_VRAM_SPILLOVER=${ALLOW_VRAM_SPILLOVER:-false}
+      - ARCA_SIMULATE_VRAM=${ARCA_SIMULATE_VRAM:-}
+      - ARCA_SIMULATE_GPU=${ARCA_SIMULATE_GPU:-}
+      - ARCA_SIMULATE_RAM=${ARCA_SIMULATE_RAM:-}
+      - ARCA_SIMULATE_CPU=${ARCA_SIMULATE_CPU:-}
+      - ARCA_SIMULATE_CORES=${ARCA_SIMULATE_CORES:-}
+      # Hardware tuning (override in .env for your GPU)
+      - LLM_CHAT_GPU_LAYERS=${LLM_CHAT_GPU_LAYERS:--1}
+      - LLM_VISION_GPU_LAYERS=${LLM_VISION_GPU_LAYERS:--1}
+      - LLM_MLOCK=${LLM_MLOCK:-false}
+      - LLM_STARTUP_TIMEOUT=${LLM_STARTUP_TIMEOUT:-300}
+      - LLM_PRECACHE_MODELS=${LLM_PRECACHE_MODELS:-true}
+      - COHESIONN_EMBED_DEVICE=${COHESIONN_EMBED_DEVICE:-cuda}
+      - COHESIONN_RERANK_DEVICE=${COHESIONN_RERANK_DEVICE:-cuda}
+      # Ingest lock - blocks chat/tool models during ingestion to protect VRAM
+      - INGEST_LOCK_ENABLED=${INGEST_LOCK_ENABLED:-true}
+      # Training pipeline directory
+      - TRAINING_DIR=/app/training
+    # tmpfs: files never touch disk, wiped on container restart
+    # Note: For scale deployment, add Fernet encryption instead
+    tmpfs:
+      - /app/uploads:size=16G
+      - /app/reports:size=4G
+    volumes:
+      - ./domains:/app/domains
+      - ./models:/models
+      - ./data/auth:/app/data/auth
+      - ./data/guidelines:/app/guidelines:ro
+      - ./data/technical_knowledge:/app/data/technical_knowledge
+      - ./data/test_knowledge:/app/data/test_knowledge:ro
+      - ./data/cohesionn_db:/app/data/cohesionn_db
+      - ./data/hf_cache:/app/.cache/huggingface
+      - ./data/maps:/data/maps:ro
+      - ./backend/training:/app/training:rw
+      - ./data/config:/app/data/config
+      - ./data/phii:/app/data/phii
+      - ./data/benchmarks:/app/data/benchmarks
+      - "./data/Synthetic Reports:/app/data/Synthetic Reports:ro"
+      - ./data/core_knowledge:/app/data/core_knowledge:ro
+      # Hardware sensors for CPU temp (works on bare-metal Linux; on Docker Desktop/WSL2, no data available)
+      - /sys/class/hwmon:/sys/class/hwmon:ro
+    depends_on:
+      - searxng
+      - qdrant
+      - redis
+      - postgres
+      - neo4j
+
+  frontend:
+    image: ${ARCA_FRONTEND_IMAGE:-ghcr.io/3spky5u-oss/arca-frontend}:${ARCA_IMAGE_TAG:-latest}
+    pull_policy: ${ARCA_PULL_POLICY:-missing}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: arca-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_URL=http://backend:8000
+    depends_on:
+      - backend
+

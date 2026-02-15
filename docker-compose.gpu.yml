@@ -1,0 +1,16 @@
+# Optional GPU override.
+#
+# Base compose is already GPU-first. Keep this file if you want to pin/override
+# device reservation details via docker-compose.override.yml.
+
+services:
+  backend:
+    deploy:
+      resources:
+        limits:
+          memory: ${BACKEND_MEMORY_LIMIT:-32G}
+        reservations:
+          devices:
+            - driver: nvidia
+              count: ${GPU_COUNT:-1}
+              capabilities: [gpu]

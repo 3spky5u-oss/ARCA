@@ -1,0 +1,25 @@
+class Arca < Formula
+  desc "ARCA local operator CLI"
+  homepage "https://github.com/3spky5u-oss/ARCA"
+  url "__URL__"
+  sha256 "__SHA256__"
+  license "MIT"
+
+  depends_on "python@3.12"
+
+  def install
+    libexec.install "scripts/arca.py"
+    libexec.install "scripts/init_env.py"
+    libexec.install "scripts/model_bootstrap.py"
+    libexec.install "scripts/preflight.py"
+
+    (bin/"arca").write <<~EOS
+      #!/bin/bash
+      exec "#{Formula["python@3.12"].opt_bin}/python3" "#{libexec}/arca.py" "$@"
+    EOS
+  end
+
+  test do
+    assert_match "ARCA operations helper", shell_output("#{bin}/arca --help")
+  end
+end

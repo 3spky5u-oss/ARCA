@@ -1,0 +1,86 @@
+# ARCA Backend Dependencies — pinned for reproducible builds
+# To upgrade: change version, rebuild.
+
+# Web framework
+fastapi==0.128.5
+uvicorn[standard]==0.40.0
+python-multipart==0.0.22
+websockets==15.0.1
+starlette==0.52.1
+
+# LLM client (OpenAI-compatible API for llama-server)
+openai==1.109.1
+httpx==0.28.1
+
+# Data validation & utilities
+pydantic==2.12.5
+python-dotenv==1.2.1
+psutil==7.2.2
+numpy==2.2.6
+
+# Document processing (Word/Excel upload + redaction)
+python-docx==1.2.0
+openpyxl==3.1.5
+
+# Admin Authentication
+bcrypt==5.0.0
+PyJWT==2.11.0
+
+# Vector Database
+qdrant-client==1.16.2
+
+# Session Cache
+redis==7.1.0
+
+# PostgreSQL (async)
+asyncpg==0.31.0
+
+# Graph Database (Neo4j)
+neo4j==6.1.0
+
+# RAG/Retrieval
+rank_bm25==0.2.2
+
+# RAPTOR hierarchical summarization (clustering)
+scikit-learn==1.8.0
+scipy==1.17.0
+umap-learn==0.5.11
+numba==0.61.2
+llvmlite==0.44.0
+
+# Embedding & Reranking (ONNX default, PyTorch fallback)
+sentence-transformers==5.2.2
+optimum==1.24.0
+onnxruntime-gpu==1.24.1
+xformers==0.0.34
+
+# PyTorch (transitive via sentence-transformers, pinned to avoid surprise 2GB downloads)
+torch==2.10.0
+transformers==4.57.6
+tokenizers==0.22.2
+safetensors==0.7.0
+
+# PDF Processing
+PyMuPDF==1.26.6
+pymupdf4llm==0.2.9
+pymupdf-layout==1.26.6
+marker-pdf==1.10.2
+
+# Document understanding (layout analysis + OCR + table extraction)
+docling==2.72.0
+
+# NER for GraphRAG entity extraction
+spacy==3.8.7
+
+# Visualization (Benchmarks + admin charts)
+plotly==6.5.2
+kaleido==1.2.0
+matplotlib==3.10.8
+seaborn==0.13.2
+
+# LLM-as-Judge (Benchmark Harness v2)
+google-generativeai==0.8.5
+
+# Testing
+pytest==9.0.2
+pytest-cov==7.0.0

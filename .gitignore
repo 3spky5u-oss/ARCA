@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Frontend / Node
+frontend/node_modules/
+frontend/.next/
+frontend/dist/
+frontend/build/
+frontend/tsconfig.tsbuildinfo
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Runtime data and model artifacts
+models/
+data/auth/
+data/benchmarks/
+data/cohesionn_db/
+data/config/
+data/guidelines/
+data/hf_cache/
+data/maps/
+data/neo4j/
+data/neo4j_logs/
+data/phii/
+data/postgres/
+data/qdrant_storage/
+data/redis/
+data/reports/
+data/searxng/
+data/Synthetic Reports/
+data/technical_knowledge/
+data/test_knowledge/
+data/uploads/
+backend/training/
+backend/reports/
+
+# Logs and local scratch
+*.log
+logs/
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
